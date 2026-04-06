@@ -11,7 +11,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
 import { formatLeadDate, getLeadStatusTone, leadStatusOptions } from "@/lib/utils";
-import type { EditableLeadField, Lead } from "@/types/lead";
+import type { EditableLeadField, Lead, LeadUpdatePayload } from "@/types/lead";
 
 function sortLeadsByDate(leads: Lead[]) {
   return [...leads].sort(
@@ -102,13 +102,15 @@ export function LeadTable() {
   async function saveLeadField(leadId: string, field: EditableLeadField, value: string) {
     setSavingCellKey(`${leadId}:${field}`);
     setErrorMessage("");
+    const updatePayload: LeadUpdatePayload = {
+      updated_at: new Date().toISOString()
+    };
+
+    updatePayload[field] = value.trim();
 
     const { error } = await supabase
       .from("leads")
-      .update({
-        [field]: value.trim(),
-        updated_at: new Date().toISOString()
-      })
+      .update(updatePayload)
       .eq("id", leadId);
 
     if (error) {
