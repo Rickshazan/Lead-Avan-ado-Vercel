@@ -29,12 +29,12 @@ function getNormalizedCellValue(row: Record<string, unknown>, aliases: string[])
   return "";
 }
 
-export function parseSpreadsheetBuffer(fileBuffer: ArrayBuffer) {
+export function parseSpreadsheetBuffer(fileBuffer: ArrayBuffer): LeadInsertPayload[] {
   const workbook = XLSX.read(fileBuffer, { type: "array" });
   const firstSheetName = workbook.SheetNames[0];
 
   if (!firstSheetName) {
-    return [] as LeadInsertPayload[];
+    return [];
   }
 
   const firstSheet = workbook.Sheets[firstSheetName];
@@ -42,31 +42,33 @@ export function parseSpreadsheetBuffer(fileBuffer: ArrayBuffer) {
     defval: ""
   });
 
-  return rawRows
-    .map((row, index) => {
-      const nome = getNormalizedCellValue(row, columnAliases.nome);
-      const telefone = getNormalizedCellValue(row, columnAliases.telefone);
-      const empresa = getNormalizedCellValue(row, columnAliases.empresa);
-      const cidade = getNormalizedCellValue(row, columnAliases.cidade);
-      const status = getNormalizedCellValue(row, columnAliases.status) || "Novo";
-      const observacao = getNormalizedCellValue(row, columnAliases.observacao);
+  const leads: LeadInsertPayload[] = [];
 
-      const hasMeaningfulContent = [nome, telefone, empresa, cidade, observacao].some(
-        (value) => value.length > 0
-      );
+  rawRows.forEach((row, index) => {
+    const nome = getNormalizedCellValue(row, columnAliases.nome);
+    const telefone = getNormalizedCellValue(row, columnAliases.telefone);
+    const empresa = getNormalizedCellValue(row, columnAliases.empresa);
+    const cidade = getNormalizedCellValue(row, columnAliases.cidade);
+    const status = getNormalizedCellValue(row, columnAliases.status) || "Novo";
+    const observacao = getNormalizedCellValue(row, columnAliases.observacao);
 
-      if (!hasMeaningfulContent) {
-        return null;
-      }
+    const hasMeaningfulContent = [nome, telefone, empresa, cidade, observacao].some(
+      (value) => value.length > 0
+    );
 
-      return {
-        nome: nome || `Lead ${index + 1}`,
-        telefone,
-        empresa,
-        cidade,
-        status,
-        observacao
-      } satisfies LeadInsertPayload;
-    })
-    .filter((lead): lead is LeadInsertPayload => lead !== null);
+    if (!hasMeaningfulContent) {
+      return;
+    }
+
+    leads.push({
+      nome: nome || `Lead ${index + 1}`,
+      telefone,
+      empresa,
+      cidade,
+      status,
+      observacao
+    });
+  });
+
+  return leads;
 }
