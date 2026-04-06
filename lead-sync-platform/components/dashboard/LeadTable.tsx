@@ -203,7 +203,9 @@ export function LeadTable() {
                         onChange={(event) => updateLeadDraft(lead.id, "nome", event.target.value)}
                         onBlur={(event) => void saveLeadField(lead.id, "nome", event.target.value)}
                         onKeyDown={(event) => {
-                          if (event.key === "Enter") event.currentTarget.blur();
+                          if (event.key === "Enter") {
+                            event.currentTarget.blur();
+                          }
                         }}
                         className="w-full rounded-xl border border-transparent bg-transparent px-3 py-2 text-sm text-white outline-none transition focus:border-accent/40 focus:bg-white/[0.04]"
                       />
@@ -215,7 +217,9 @@ export function LeadTable() {
                         onChange={(event) => updateLeadDraft(lead.id, "telefone", event.target.value)}
                         onBlur={(event) => void saveLeadField(lead.id, "telefone", event.target.value)}
                         onKeyDown={(event) => {
-                          if (event.key === "Enter") event.currentTarget.blur();
+                          if (event.key === "Enter") {
+                            event.currentTarget.blur();
+                          }
                         }}
                         className="w-full rounded-xl border border-transparent bg-transparent px-3 py-2 text-sm text-slate-200 outline-none transition focus:border-accent/40 focus:bg-white/[0.04]"
                       />
@@ -227,7 +231,9 @@ export function LeadTable() {
                         onChange={(event) => updateLeadDraft(lead.id, "empresa", event.target.value)}
                         onBlur={(event) => void saveLeadField(lead.id, "empresa", event.target.value)}
                         onKeyDown={(event) => {
-                          if (event.key === "Enter") event.currentTarget.blur();
+                          if (event.key === "Enter") {
+                            event.currentTarget.blur();
+                          }
                         }}
                         className="w-full rounded-xl border border-transparent bg-transparent px-3 py-2 text-sm text-slate-200 outline-none transition focus:border-accent/40 focus:bg-white/[0.04]"
                       />
@@ -239,7 +245,9 @@ export function LeadTable() {
                         onChange={(event) => updateLeadDraft(lead.id, "cidade", event.target.value)}
                         onBlur={(event) => void saveLeadField(lead.id, "cidade", event.target.value)}
                         onKeyDown={(event) => {
-                          if (event.key === "Enter") event.currentTarget.blur();
+                          if (event.key === "Enter") {
+                            event.currentTarget.blur();
+                          }
                         }}
                         className="w-full rounded-xl border border-transparent bg-transparent px-3 py-2 text-sm text-slate-200 outline-none transition focus:border-accent/40 focus:bg-white/[0.04]"
                       />
@@ -271,7 +279,9 @@ export function LeadTable() {
                         onChange={(event) => updateLeadDraft(lead.id, "observacao", event.target.value)}
                         onBlur={(event) => void saveLeadField(lead.id, "observacao", event.target.value)}
                         onKeyDown={(event) => {
-                          if (event.key === "Enter") event.currentTarget.blur();
+                          if (event.key === "Enter") {
+                            event.currentTarget.blur();
+                          }
                         }}
                         className="w-full rounded-xl border border-transparent bg-transparent px-3 py-2 text-sm text-slate-200 outline-none transition focus:border-accent/40 focus:bg-white/[0.04]"
                       />
