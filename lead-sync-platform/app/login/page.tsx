@@ -1,93 +1,85 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowRight, LockKeyhole, Mail, Sparkles } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ArrowRight, KeyRound, Sparkles, UserRound } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
-import { persistAuthSession } from "@/lib/auth";
-import { getSupabaseBrowserClient } from "@/lib/supabase";
+import {
+  getBrowserDisplayName,
+  hasBrowserWorkspaceAccess,
+  persistWorkspaceIdentity
+} from "@/lib/auth";
+
+function getAccessMessage(errorCode: string | null) {
+  if (errorCode === "invalid-link") {
+    return "Esse link privado nao e valido ou expirou. Abra o link correto para liberar o workspace.";
+  }
+
+  return "Abra seu link privado para liberar o acesso. Depois basta informar um nome para entrar.";
+}
 
 export default function LoginPage() {
   const router = useRouter();
-  const supabase = getSupabaseBrowserClient();
+  const searchParams = useSearchParams();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isCheckingSession, setIsCheckingSession] = useState(true);
+  const [displayName, setDisplayName] = useState("");
+  const [hasWorkspaceAccess, setHasWorkspaceAccess] = useState(false);
+  const [isCheckingAccess, setIsCheckingAccess] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  const accessMessage = useMemo(
+    () => getAccessMessage(searchParams.get("error")),
+    [searchParams]
+  );
+
   useEffect(() => {
-    let isMounted = true;
+    const accessGranted = hasBrowserWorkspaceAccess();
+    const savedDisplayName = getBrowserDisplayName();
 
-    const initializeSession = async () => {
-      const {
-        data: { session }
-      } = await supabase.auth.getSession();
+    setHasWorkspaceAccess(accessGranted);
+    setDisplayName(savedDisplayName);
 
-      if (!isMounted) {
-        return;
-      }
-
-      persistAuthSession(session);
-
-      if (session) {
-        router.replace("/dashboard");
-        return;
-      }
-
-      setIsCheckingSession(false);
-    };
-
-    const {
-      data: { subscription }
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      persistAuthSession(session);
-
-      if (session) {
-        router.replace("/dashboard");
-      }
-    });
-
-    void initializeSession();
-
-    return () => {
-      isMounted = false;
-      subscription.unsubscribe();
-    };
-  }, [router, supabase]);
-
-  async function handleLogin(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setErrorMessage("");
-    setIsLoading(true);
-
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
-
-    if (error) {
-      setErrorMessage("Nao foi possivel entrar. Confira suas credenciais.");
-      setIsLoading(false);
+    if (accessGranted && savedDisplayName) {
+      router.replace("/dashboard");
       return;
     }
 
-    persistAuthSession(data.session ?? null);
+    setIsCheckingAccess(false);
+  }, [router]);
+
+  function handleContinue(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!hasWorkspaceAccess) {
+      setErrorMessage("Abra o link privado antes de escolher um nome.");
+      return;
+    }
+
+    const normalizedDisplayName = displayName.trim();
+
+    if (!normalizedDisplayName) {
+      setErrorMessage("Informe um nome para entrar no workspace.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMessage("");
+    persistWorkspaceIdentity(normalizedDisplayName);
     router.replace("/dashboard");
   }
 
-  if (isCheckingSession) {
+  if (isCheckingAccess) {
     return (
       <main className="flex min-h-screen items-center justify-center px-6">
         <div className="glass-panel flex items-center gap-3 rounded-3xl px-6 py-4 text-sm text-muted">
           <Spinner size="sm" />
-          Validando sessao...
+          Preparando acesso ao workspace...
         </div>
       </main>
     );
@@ -106,32 +98,32 @@ export default function LoginPage() {
               </div>
               <div className="max-w-2xl space-y-4">
                 <h1 className="text-4xl font-semibold leading-tight text-white sm:text-5xl">
-                  Operacao de leads colaborativa com visual premium e sync em tempo real.
+                  Workspace privado por link com entrada instantanea por nome.
                 </h1>
                 <p className="max-w-xl text-base leading-7 text-slate-300">
-                  Importe planilhas, organize seu pipeline e acompanhe mudancas da equipe no mesmo
-                  instante em uma interface limpa, escura e sofisticada.
+                  Compartilhe um unico link com quem deve acessar a operacao. Depois disso, cada
+                  pessoa informa apenas o proprio nome para entrar no painel colaborativo.
                 </p>
               </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
-                <p className="text-sm font-medium text-white">Excel para banco</p>
+                <p className="text-sm font-medium text-white">Link privado</p>
                 <p className="mt-2 text-sm leading-6 text-slate-400">
-                  Leitura de arquivos .xlsx e .csv com mapeamento automatico.
+                  O acesso e liberado apenas por uma rota secreta compartilhada manualmente.
                 </p>
               </div>
               <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
-                <p className="text-sm font-medium text-white">Tabela editavel</p>
+                <p className="text-sm font-medium text-white">Sem senha</p>
                 <p className="mt-2 text-sm leading-6 text-slate-400">
-                  Campos alterados inline com atualizacao imediata no Supabase.
+                  O usuario nao precisa de email, senha ou confirmacao no Supabase Auth.
                 </p>
               </div>
               <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
-                <p className="text-sm font-medium text-white">Realtime nativo</p>
+                <p className="text-sm font-medium text-white">Identificacao rapida</p>
                 <p className="mt-2 text-sm leading-6 text-slate-400">
-                  Cada importacao ou edicao aparece para todos os usuarios conectados.
+                  Cada pessoa escolhe um nome local para trabalhar no mesmo workspace.
                 </p>
               </div>
             </div>
@@ -140,44 +132,39 @@ export default function LoginPage() {
 
         <Card className="rounded-[32px]">
           <CardHeader>
-            <CardTitle className="text-2xl">Entrar na plataforma</CardTitle>
+            <CardTitle className="text-2xl">
+              {hasWorkspaceAccess ? "Escolha seu nome" : "Acesso protegido por link"}
+            </CardTitle>
             <CardDescription>
-              Use email e senha do Supabase Auth para acessar o workspace.
+              {hasWorkspaceAccess
+                ? "Digite o nome que deseja exibir neste workspace compartilhado."
+                : "Esse ambiente so pode ser liberado por um link privado com token."}
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <form className="space-y-5" onSubmit={handleLogin}>
-              <div className="space-y-2">
-                <label className="text-sm text-slate-300" htmlFor="email">
-                  Email
-                </label>
-                <div className="relative">
-                  <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="voce@empresa.com"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    className="pl-11"
-                    required
-                  />
-                </div>
+          <CardContent className="space-y-5">
+            <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm leading-6 text-slate-300">
+              <div className="flex items-start gap-3">
+                <KeyRound className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                <span>{accessMessage}</span>
               </div>
+            </div>
 
+            <form className="space-y-5" onSubmit={handleContinue}>
               <div className="space-y-2">
-                <label className="text-sm text-slate-300" htmlFor="password">
-                  Senha
+                <label className="text-sm text-slate-300" htmlFor="display-name">
+                  Nome de exibicao
                 </label>
                 <div className="relative">
-                  <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                  <UserRound className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
                   <Input
-                    id="password"
-                    type="password"
-                    placeholder="Sua senha"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
+                    id="display-name"
+                    type="text"
+                    placeholder="Ex.: Ricardo, Ana, Comercial"
+                    value={displayName}
+                    onChange={(event) => setDisplayName(event.target.value)}
                     className="pl-11"
+                    maxLength={60}
+                    disabled={!hasWorkspaceAccess || isSubmitting}
                     required
                   />
                 </div>
@@ -189,15 +176,20 @@ export default function LoginPage() {
                 </div>
               ) : null}
 
-              <Button type="submit" size="lg" className="w-full" disabled={isLoading}>
-                {isLoading ? (
+              <Button
+                type="submit"
+                size="lg"
+                className="w-full"
+                disabled={!hasWorkspaceAccess || isSubmitting}
+              >
+                {isSubmitting ? (
                   <>
                     <Spinner size="sm" />
                     Entrando...
                   </>
                 ) : (
                   <>
-                    Acessar dashboard
+                    Entrar no dashboard
                     <ArrowRight className="h-4 w-4" />
                   </>
                 )}
