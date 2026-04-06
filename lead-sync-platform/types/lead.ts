@@ -19,20 +19,6 @@ export type EditableLeadField =
   | "status"
   | "observacao";
 
-export type LeadInsertPayload = {
-  nome: string;
-  telefone?: string;
-  empresa?: string;
-  cidade?: string;
-  status?: string;
-  observacao?: string;
-  created_by?: string;
-};
-
-export type LeadUpdatePayload = Partial<
-  Pick<Lead, EditableLeadField | "updated_at">
->;
-
 export type Database = {
   public: {
     Tables: {
@@ -71,3 +57,9 @@ export type Database = {
     CompositeTypes: {};
   };
 };
+
+export type LeadInsertPayload = Database["public"]["Tables"]["leads"]["Insert"];
+
+export type LeadUpdatePayload = Partial<
+  Pick<Lead, EditableLeadField | "updated_at">
+>;
