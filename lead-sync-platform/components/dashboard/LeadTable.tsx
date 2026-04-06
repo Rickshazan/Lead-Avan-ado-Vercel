@@ -102,15 +102,15 @@ export function LeadTable() {
   async function saveLeadField(leadId: string, field: EditableLeadField, value: string) {
     setSavingCellKey(`${leadId}:${field}`);
     setErrorMessage("");
-    const updatePayload: LeadUpdatePayload = {
-      updated_at: new Date().toISOString()
-    };
 
-    updatePayload[field] = value.trim();
+    const updatePayload = {
+      updated_at: new Date().toISOString(),
+      [field]: value.trim()
+    } as LeadUpdatePayload;
 
     const { error } = await supabase
       .from("leads")
-      .update(updatePayload as LeadUpdatePayload)
+      .update(updatePayload)
       .eq("id", leadId);
 
     if (error) {
@@ -203,19 +203,93 @@ export function LeadTable() {
                         onChange={(event) => updateLeadDraft(lead.id, "nome", event.target.value)}
                         onBlur={(event) => void saveLeadField(lead.id, "nome", event.target.value)}
                         onKeyDown={(event) => {
-                          if (event.key === "Enter") {
-                            event.currentTarget.blur();
-                          }
+                          if (event.key === "Enter") event.currentTarget.blur();
                         }}
                         className="w-full rounded-xl border border-transparent bg-transparent px-3 py-2 text-sm text-white outline-none transition focus:border-accent/40 focus:bg-white/[0.04]"
                       />
                     </TableCell>
+
                     <TableCell className="min-w-[180px]">
                       <input
                         value={lead.telefone}
                         onChange={(event) => updateLeadDraft(lead.id, "telefone", event.target.value)}
-                        onBlur={(event) =>
-                          void saveLeadField(lead.id, "telefone", event.target.value)
-                        }
+                        onBlur={(event) => void saveLeadField(lead.id, "telefone", event.target.value)}
                         onKeyDown={(event) => {
-                          if (event
+                          if (event.key === "Enter") event.currentTarget.blur();
+                        }}
+                        className="w-full rounded-xl border border-transparent bg-transparent px-3 py-2 text-sm text-slate-200 outline-none transition focus:border-accent/40 focus:bg-white/[0.04]"
+                      />
+                    </TableCell>
+
+                    <TableCell className="min-w-[180px]">
+                      <input
+                        value={lead.empresa}
+                        onChange={(event) => updateLeadDraft(lead.id, "empresa", event.target.value)}
+                        onBlur={(event) => void saveLeadField(lead.id, "empresa", event.target.value)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") event.currentTarget.blur();
+                        }}
+                        className="w-full rounded-xl border border-transparent bg-transparent px-3 py-2 text-sm text-slate-200 outline-none transition focus:border-accent/40 focus:bg-white/[0.04]"
+                      />
+                    </TableCell>
+
+                    <TableCell className="min-w-[170px]">
+                      <input
+                        value={lead.cidade}
+                        onChange={(event) => updateLeadDraft(lead.id, "cidade", event.target.value)}
+                        onBlur={(event) => void saveLeadField(lead.id, "cidade", event.target.value)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") event.currentTarget.blur();
+                        }}
+                        className="w-full rounded-xl border border-transparent bg-transparent px-3 py-2 text-sm text-slate-200 outline-none transition focus:border-accent/40 focus:bg-white/[0.04]"
+                      />
+                    </TableCell>
+
+                    <TableCell className="min-w-[170px]">
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={lead.status}
+                          onChange={(event) => {
+                            updateLeadDraft(lead.id, "status", event.target.value);
+                            void saveLeadField(lead.id, "status", event.target.value);
+                          }}
+                          className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white outline-none transition focus:border-accent/40 focus:ring-2 focus:ring-accent/20"
+                        >
+                          {[...new Set([...leadStatusOptions, lead.status])].map((statusOption) => (
+                            <option key={statusOption} value={statusOption} className="bg-slate-950">
+                              {statusOption}
+                            </option>
+                          ))}
+                        </select>
+                        <Badge tone={getLeadStatusTone(lead.status)}>{lead.status}</Badge>
+                      </div>
+                    </TableCell>
+
+                    <TableCell className="min-w-[240px]">
+                      <input
+                        value={lead.observacao}
+                        onChange={(event) => updateLeadDraft(lead.id, "observacao", event.target.value)}
+                        onBlur={(event) => void saveLeadField(lead.id, "observacao", event.target.value)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") event.currentTarget.blur();
+                        }}
+                        className="w-full rounded-xl border border-transparent bg-transparent px-3 py-2 text-sm text-slate-200 outline-none transition focus:border-accent/40 focus:bg-white/[0.04]"
+                      />
+                    </TableCell>
+
+                    <TableCell className="min-w-[160px]">
+                      <div className="flex items-center gap-2 text-sm text-slate-400">
+                        {savingCellKey?.startsWith(lead.id) ? <Spinner size="sm" /> : null}
+                        <span>{formatLeadDate(lead.updated_at)}</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
