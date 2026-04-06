@@ -6,7 +6,7 @@ export type Lead = {
   cidade: string;
   status: string;
   observacao: string;
-  created_by: string;
+  created_by: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -18,6 +18,20 @@ export type EditableLeadField =
   | "cidade"
   | "status"
   | "observacao";
+
+export type LeadInsertPayload = {
+  nome: string;
+  telefone?: string;
+  empresa?: string;
+  cidade?: string;
+  status?: string;
+  observacao?: string;
+  created_by?: string | null;
+};
+
+export type LeadUpdatePayload = Partial<
+  Pick<Lead, EditableLeadField | "updated_at">
+>;
 
 export type Database = {
   public: {
@@ -32,7 +46,7 @@ export type Database = {
           cidade?: string;
           status?: string;
           observacao?: string;
-          created_by?: string;
+          created_by?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -44,7 +58,7 @@ export type Database = {
           cidade?: string;
           status?: string;
           observacao?: string;
-          created_by?: string;
+          created_by?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -57,9 +71,3 @@ export type Database = {
     CompositeTypes: {};
   };
 };
-
-export type LeadInsertPayload = Database["public"]["Tables"]["leads"]["Insert"];
-
-export type LeadUpdatePayload = Partial<
-  Pick<Lead, EditableLeadField | "updated_at">
->;
