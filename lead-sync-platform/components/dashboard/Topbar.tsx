@@ -59,7 +59,7 @@ export function Topbar() {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, [router, supabase.auth]);
+  }, [router, supabase]);
 
   async function handleLogout() {
     setIsLoggingOut(true);
