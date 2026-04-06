@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 4 8 20;
+  --foreground: 240 244 255;
+  --muted: 148 163 184;
+  --border: 148 163 184;
+  --accent: 129 140 248;
+  --accent-secondary: 56 189 248;
+  --success: 74 222 128;
+  --warning: 250 204 21;
+  --danger: 248 113 113;
+}
+
+* {
+  border-color: rgb(var(--border) / 0.16);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  background-color: rgb(var(--background));
+  color: rgb(var(--foreground));
+}
+
+::selection {
+  background: rgb(var(--accent) / 0.32);
+  color: rgb(var(--foreground));
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgb(var(--border) / 0.22);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--border) / 0.34);
+}
+
+@layer components {
+  .glass-panel {
+    @apply border border-white/10 bg-white/5 shadow-panel backdrop-blur-2xl;
+  }
+
+  .glass-highlight {
+    @apply bg-gradient-to-br from-white/[0.14] via-white/5 to-transparent;
+  }
+
+  .section-shell {
+    @apply mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8;
+  }
+}
