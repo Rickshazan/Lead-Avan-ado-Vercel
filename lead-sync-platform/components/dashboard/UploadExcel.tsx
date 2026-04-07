@@ -12,32 +12,61 @@ export function UploadExcel() {
 
     try {
       const buffer = await file.arrayBuffer();
-      const workbook = XLSX.read(buffer, { type: "array" });
 
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const json: any[] = XLSX.utils.sheet_to_json(sheet);
+      const workbook = XLSX.read(buffer, {
+        type: "array",
+        cellDates: true,
+        cellText: false,
+      });
 
-      if (!json.length) {
-        alert("Planilha vazia.");
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+
+      // 🔥 converte TUDO, mesmo sem header perfeito
+      const rows: any[][] = XLSX.utils.sheet_to_json(sheet, {
+        header: 1,
+        defval: "",
+      });
+
+      if (rows.length < 2) {
+        alert("Planilha vazia ou inválida");
         setLoading(false);
         return;
       }
 
-      const leads = json.map((row) => ({
-        nome: row.nome || row.Nome || row.name || "",
-        telefone: row.telefone || row.Telefone || row.celular || "",
-        empresa: row.empresa || row.Empresa || "",
-        cidade: row.cidade || row.Cidade || "",
-        status: row.status || "Novo",
-        observacao: row.observacao || row.obs || "",
-      }));
+      const headers = rows[0].map((h: any) =>
+        String(h).toLowerCase().trim()
+      );
+
+      const dataRows = rows.slice(1);
+
+      const leads = dataRows.map((row) => {
+        const get = (names: string[]) => {
+          for (let name of names) {
+            const index = headers.findIndex((h: string) =>
+              h.includes(name)
+            );
+            if (index !== -1) return row[index] || "";
+          }
+          return "";
+        };
+
+        return {
+          nome: get(["nome", "name"]),
+          telefone: get(["telefone", "celular", "phone", "whatsapp"]),
+          empresa: get(["empresa", "company"]),
+          cidade: get(["cidade", "city"]),
+          status: "Novo",
+          observacao: get(["obs", "observacao"]),
+        };
+      });
 
       const filtered = leads.filter(
         (l) => l.nome || l.telefone
       );
 
       if (!filtered.length) {
-        alert("Nenhum lead válido encontrado.");
+        alert("Nenhum dado válido encontrado");
         setLoading(false);
         return;
       }
@@ -48,7 +77,7 @@ export function UploadExcel() {
 
       if (error) {
         console.error(error);
-        alert("Erro ao salvar.");
+        alert("Erro ao salvar no banco");
         setLoading(false);
         return;
       }
@@ -58,7 +87,7 @@ export function UploadExcel() {
 
     } catch (err) {
       console.error(err);
-      alert("Erro ao processar arquivo.");
+      alert("Erro ao ler o Excel");
     }
 
     setLoading(false);
