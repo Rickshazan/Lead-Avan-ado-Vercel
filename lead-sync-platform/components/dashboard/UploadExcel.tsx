@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import * as XLSX from "xlsx";
-
+import { supabase } from "@/lib/supabase";
 
 export function UploadExcel() {
   const [loading, setLoading] = useState(false);
