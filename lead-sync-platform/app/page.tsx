@@ -1,18 +1,16 @@
-import { LeadTable } from "@/components/dashboard/LeadTable";
 import { UploadExcel } from "@/components/dashboard/UploadExcel";
-import { Topbar } from "@/components/dashboard/Topbar";
+import { LeadTable } from "@/components/dashboard/LeadTable";
 
-export default function HomePage() {
+export default function Home() {
   return (
-    <main className="min-h-screen px-6 py-8">
-      <div className="mx-auto flex max-w-7xl flex-col gap-6">
-        <Topbar />
-        
-        <section className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
-          <UploadExcel />
-          <LeadTable />
-        </section>
-      </div>
+    <main className="p-10 bg-black min-h-screen text-white">
+      <h1 className="text-2xl font-bold mb-6">
+        Lead Control
+      </h1>
+
+      <UploadExcel />
+
+      <LeadTable />
     </main>
   );
 }
