@@ -23,44 +23,15 @@ export function UploadExcel() {
         return;
       }
 
-      // 🔥 mapeamento simples (aceita qualquer coisa)
       const leads = json.map((row) => ({
-        nome:
-          row.nome ||
-          row.Nome ||
-          row.name ||
-          row["Nome Completo"] ||
-          "",
-
-        telefone:
-          row.telefone ||
-          row.Telefone ||
-          row.celular ||
-          row.whatsapp ||
-          "",
-
-        empresa:
-          row.empresa ||
-          row.Empresa ||
-          row.company ||
-          "",
-
-        cidade:
-          row.cidade ||
-          row.Cidade ||
-          "",
-
-        status:
-          row.status ||
-          "Novo",
-
-        observacao:
-          row.observacao ||
-          row.obs ||
-          "",
+        nome: row.nome || row.Nome || row.name || "",
+        telefone: row.telefone || row.Telefone || row.celular || "",
+        empresa: row.empresa || row.Empresa || "",
+        cidade: row.cidade || row.Cidade || "",
+        status: row.status || "Novo",
+        observacao: row.observacao || row.obs || "",
       }));
 
-      // remove completamente vazios
       const filtered = leads.filter(
         (l) => l.nome || l.telefone
       );
@@ -77,7 +48,7 @@ export function UploadExcel() {
 
       if (error) {
         console.error(error);
-        alert("Erro ao salvar no banco.");
+        alert("Erro ao salvar.");
         setLoading(false);
         return;
       }
