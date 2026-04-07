@@ -2,9 +2,7 @@
 
 import { useState } from "react";
 import * as XLSX from "xlsx";
-import { createClient } from "@/lib/supabase";
 
-const supabase = createClient();
 
 export function UploadExcel() {
   const [loading, setLoading] = useState(false);
